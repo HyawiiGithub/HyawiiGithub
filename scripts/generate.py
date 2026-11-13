@@ -364,9 +364,12 @@ def version_readme_assets() -> bool:
     for name in ("graph.svg", "worth.svg", "play.svg"):
         with open(os.path.join(ASSETS, name), "rb") as fh:
             digest = hashlib.sha1(fh.read()).hexdigest()[:8]
+        # the /raw/ redirect drops the query, so point straight at the raw host
+        url = f"https://raw.githubusercontent.com/{USER}/{USER}/main/assets/{name}"
         updated = re.sub(
-            "assets/" + re.escape(name) + r"(\?v=[0-9a-f]*)?",
-            f"assets/{name}?v={digest}",
+            r"(?:https://raw\.githubusercontent\.com/" + USER + "/" + USER + r"/main/)?"
+            + "assets/" + re.escape(name) + r"(\?v=[0-9a-f]*)?",
+            f"{url}?v={digest}",
             updated,
         )
     if updated == text:

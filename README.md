@@ -6,18 +6,18 @@ mostly typescript and python, mostly things that have no business running in a b
 right now that means multiplayer political/economic sims: hourly turns, elections, central banks,
 corporations quietly undercutting each other while nobody's watching the market page.
 
-<a href="https://hyawiigithub.github.io/HyawiiGithub/"><img src="assets/worth.svg?v=2708d9f2" alt="net worth over the last year"></a>
+<a href="https://hyawiigithub.github.io/HyawiiGithub/"><img src="https://raw.githubusercontent.com/HyawiiGithub/HyawiiGithub/main/assets/worth.svg?v=d0e92d7a" alt="net worth over the last year"></a>
 
-<a href="https://hyawiigithub.github.io/HyawiiGithub/"><img src="assets/graph.svg?v=a58f790e" alt="contributions over the last year"></a>
+<a href="https://hyawiigithub.github.io/HyawiiGithub/"><img src="https://raw.githubusercontent.com/HyawiiGithub/HyawiiGithub/main/assets/graph.svg?v=1392f3ca" alt="contributions over the last year"></a>
 
-<a href="https://hyawiigithub.github.io/HyawiiGithub/#game"><img src="assets/play.svg?v=afdadade" alt="play the market game"></a>
+<a href="https://hyawiigithub.github.io/HyawiiGithub/#game"><img src="https://raw.githubusercontent.com/HyawiiGithub/HyawiiGithub/main/assets/play.svg?v=afdadade" alt="play the market game"></a>
 
 one commit moves the number. hover a square on [the live page](https://hyawiigithub.github.io/HyawiiGithub/) for the exact count, the charts above are links too.
 
 <!-- stats:start -->
 ```text
-53,569 contributions  |  128 active days  |  81 day streak (best 81)
-last 30 days  9,225  |  busiest day  1,397 (sep 27)
+53,570 contributions  |  128 active days  |  81 day streak (best 81)
+last 30 days  9,226  |  busiest day  1,397 (sep 27)
 
 html 43%   javascript 28%   typescript 26%   css 3%   python 1%
 ```
