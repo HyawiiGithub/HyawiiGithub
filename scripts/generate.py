@@ -9,6 +9,7 @@ Standard library only: the GitHub Action that runs this needs no dependencies.
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
 import json
 import math
 import os
@@ -355,6 +356,26 @@ def write_readme(block: str) -> bool:
     return True
 
 
+def version_readme_assets() -> bool:
+    """Key the card urls to their contents so GitHub's image cache can't serve an old card."""
+    with open(README, encoding="utf-8") as fh:
+        text = fh.read()
+    updated = text
+    for name in ("graph.svg", "worth.svg", "play.svg"):
+        with open(os.path.join(ASSETS, name), "rb") as fh:
+            digest = hashlib.sha1(fh.read()).hexdigest()[:8]
+        updated = re.sub(
+            "assets/" + re.escape(name) + r"(\?v=[0-9a-f]*)?",
+            f"assets/{name}?v={digest}",
+            updated,
+        )
+    if updated == text:
+        return False
+    with open(README, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(updated)
+    return True
+
+
 def smooth_path(points: list[tuple[float, float]]) -> str:
     if not points:
         return ""
@@ -566,6 +587,7 @@ def main() -> int:
         fh.write(render_play_button())
     print("  wrote assets/play.svg")
 
+    version_readme_assets()
     block = stats_block(days, languages)
     print(f"  README block {'updated' if write_readme(block) else 'unchanged'}")
     print(block)
