@@ -6,9 +6,9 @@ mostly typescript and python, mostly things that have no business running in a b
 right now that means multiplayer political/economic sims: hourly turns, elections, central banks,
 corporations quietly undercutting each other while nobody's watching the market page.
 
-<a href="https://hyawiigithub.github.io/HyawiiGithub/"><img src="assets/worth.svg?v=1214ad49" alt="net worth over the last year"></a>
+<a href="https://hyawiigithub.github.io/HyawiiGithub/"><img src="assets/worth.svg?v=2708d9f2" alt="net worth over the last year"></a>
 
-<a href="https://hyawiigithub.github.io/HyawiiGithub/"><img src="assets/graph.svg?v=8692eb55" alt="contributions over the last year"></a>
+<a href="https://hyawiigithub.github.io/HyawiiGithub/"><img src="assets/graph.svg?v=a58f790e" alt="contributions over the last year"></a>
 
 <a href="https://hyawiigithub.github.io/HyawiiGithub/#game"><img src="assets/play.svg?v=afdadade" alt="play the market game"></a>
 
@@ -16,8 +16,8 @@ one commit moves the number. hover a square on [the live page](https://hyawiigit
 
 <!-- stats:start -->
 ```text
-53,568 contributions  |  128 active days  |  81 day streak (best 81)
-last 30 days  9,224  |  busiest day  1,397 (sep 27)
+53,569 contributions  |  128 active days  |  81 day streak (best 81)
+last 30 days  9,225  |  busiest day  1,397 (sep 27)
 
 html 43%   javascript 28%   typescript 26%   css 3%   python 1%
 ```

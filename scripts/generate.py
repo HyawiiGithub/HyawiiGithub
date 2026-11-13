@@ -402,7 +402,7 @@ def compact_money(amount: float) -> str:
 
 HISTORY_START = dt.date(2020, 1, 1)
 PATH_SEED = 20200101
-PER_COMMIT = 4_953  # keeps the total in the low hundreds of millions
+PER_COMMIT = 2_134  # keeps the total around a hundred million
 WORTH_CEILING = 299_400_000.0
 
 
