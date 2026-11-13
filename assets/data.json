@@ -1,0 +1,32 @@
+{
+  "user": "HyawiiGithub",
+  "generated_at": "2026-11-13T21:55:27Z",
+  "total_contributions": 53561,
+  "current_streak": 81,
+  "longest_streak": 81,
+  "active_days": 128,
+  "public_repos": 40,
+  "stars": 1,
+  "top_languages": [
+    {
+      "name": "HTML",
+      "percent": 36.51
+    },
+    {
+      "name": "JavaScript",
+      "percent": 34.21
+    },
+    {
+      "name": "TypeScript",
+      "percent": 20.69
+    },
+    {
+      "name": "Python",
+      "percent": 5.91
+    },
+    {
+      "name": "CSS",
+      "percent": 2.48
+    }
+  ]
+}
