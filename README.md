@@ -1,88 +1,40 @@
-<div align="center">
+### hyawii
 
-<img src="assets/banner.svg" width="840" alt="Hyawii"/>
+i just code anything. belgium.
 
-<br/>
+mostly typescript and python, mostly things that have no business running in a browser tab.
+right now that means multiplayer political/economic sims — hourly turns, elections, central banks,
+corporations quietly undercutting each other while nobody's watching the market page.
 
-<a href="https://nohello.net"><img alt="nohello.net" src="https://img.shields.io/badge/nohello.net-0a0e17?style=for-the-badge&logo=firefoxbrowser&logoColor=6df3ff"/></a>
-<img alt="belgium" src="https://img.shields.io/badge/belgium-0a0e17?style=for-the-badge&logo=googlemaps&logoColor=8b9dff"/>
-<img alt="typescript" src="https://img.shields.io/badge/typescript-0a0e17?style=for-the-badge&logo=typescript&logoColor=8b9dff"/>
-<img alt="python" src="https://img.shields.io/badge/python-0a0e17?style=for-the-badge&logo=python&logoColor=c58bff"/>
+<img src="assets/graph.svg" alt="contributions over the last year">
 
-</div>
+<!-- stats:start -->
+```text
+53,560 contributions  |  128 active days  |  81 day streak (best 81)
+last 30 days  9,216  |  busiest day  1,397 (sep 27)
 
-<br/>
+html 44%   javascript 27%   typescript 25%   css 3%   python 1%
+```
+<!-- stats:end -->
 
-<img src="assets/heatmap.svg" width="840" alt="contribution graph"/>
+---
 
-<img src="assets/stats.svg" width="840" alt="stats"/>
+**what i'm actually building**
 
-<img src="assets/activity.svg" width="840" alt="90 day activity"/>
+- **[AHDGame](https://github.com/HyawiiGithub/AHDGame)** — browser multiplayer political + economic sim. elections, legislation, corporations, central banks, hourly turns.
+- **[discord-economic-intelligence](https://github.com/HyawiiGithub/discord-economic-intelligence)** — per-server discord economy: markets, a jarvis, and a cloudflare dashboard doing more than it should.
+- **[dmWipe](https://github.com/HyawiiGithub/dmWipe)** — vencord plugin. bulk deletes messages. you know why.
+- **[vanguard-group](https://github.com/HyawiiGithub/vanguard-group)** — corporate alliance inside AHD. floor prices, 10–15% margins, no charity.
 
-<img src="assets/languages.svg" width="840" alt="languages"/>
+**and then the rest**
 
-<br/>
+- **[crown](https://github.com/HyawiiGithub/crown)** — typescript. it's called crown. that's all i'm giving you.
+- **[swiss-constitution](https://github.com/HyawiiGithub/swiss-constitution)**, **[CEC-Elections](https://github.com/HyawiiGithub/CEC-Elections)**, **[USSR-stock](https://github.com/HyawiiGithub/USSR-stock)** — mock governments. occasionally run better than the real ones.
+- **victoria 3 mods** — [A New Century](https://github.com/HyawiiGithub/A-New-Century), [Modern-Day-Victoria-3-Web](https://github.com/HyawiiGithub/Modern-Day-Victoria-3-Web). yes, the map is still cursed.
+- **[Flint-And-Steel-MP](https://github.com/HyawiiGithub/Flint-And-Steel-MP)**, **[Twitter-MD-RP](https://github.com/HyawiiGithub/Twitter-MD-RP)** — older stuff, still running somewhere.
 
-<h3>things I build</h3>
+---
 
-<table>
-<tr>
-<td width="50%" valign="top">
+[nohello.net](https://nohello.net) · loud in issues, slow in dms
 
-**[AHDGame](https://github.com/HyawiiGithub/AHDGame)** — browser multiplayer political + economic simulation. Elections, legislation, corporations, central banks, hourly turns.
-
-**[crown](https://github.com/HyawiiGithub/crown)** — TypeScript, no description needed, just vibes.
-
-</td>
-<td width="50%" valign="top">
-
-**[discord-economic-intelligence](https://github.com/HyawiiGithub/discord-economic-intelligence)** — per-server Discord economy with markets, an AI Jarvis and a full Cloudflare dashboard.
-
-**[dmWipe](https://github.com/HyawiiGithub/dmWipe)** — Vencord plugin that bulk-deletes messages in DMs, groups and servers.
-
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-
-**[vanguard-group](https://github.com/HyawiiGithub/vanguard-group)** — corporate coordination alliance: floor prices, 10–15% margins, no mercy.
-
-**[Modern-Day-Victoria-3-Web](https://github.com/HyawiiGithub/Modern-Day-Victoria-3-Web)** — grand strategy, but in a browser tab.
-
-</td>
-<td width="50%" valign="top">
-
-**[swiss-constitution](https://github.com/HyawiiGithub/swiss-constitution)** — a mock government that actually has its paperwork in order.
-
-**[Flint-And-Steel-MP](https://github.com/HyawiiGithub/Flint-And-Steel-MP)** — Python multiplayer, questionable descriptions, good time.
-
-</td>
-</tr>
-</table>
-
-<h3>toolbox</h3>
-
-<div align="center">
-
-<img src="https://img.shields.io/badge/TypeScript-0a0e17?style=flat-square&logo=typescript&logoColor=6df3ff"/>
-<img src="https://img.shields.io/badge/JavaScript-0a0e17?style=flat-square&logo=javascript&logoColor=8b9dff"/>
-<img src="https://img.shields.io/badge/Python-0a0e17?style=flat-square&logo=python&logoColor=c58bff"/>
-<img src="https://img.shields.io/badge/Node.js-0a0e17?style=flat-square&logo=nodedotjs&logoColor=6df3ff"/>
-<img src="https://img.shields.io/badge/Cloudflare_Workers-0a0e17?style=flat-square&logo=cloudflareworkers&logoColor=8b9dff"/>
-<img src="https://img.shields.io/badge/Electron-0a0e17?style=flat-square&logo=electron&logoColor=c58bff"/>
-<img src="https://img.shields.io/badge/Discord.js-0a0e17?style=flat-square&logo=discord&logoColor=6df3ff"/>
-<img src="https://img.shields.io/badge/Docker-0a0e17?style=flat-square&logo=docker&logoColor=8b9dff"/>
-<img src="https://img.shields.io/badge/Git-0a0e17?style=flat-square&logo=git&logoColor=c58bff"/>
-
-</div>
-
-<br/>
-
-<div align="center">
-<sub>
-
-every card above is drawn from scratch in [`scripts/generate.py`](scripts/generate.py) — no third-party image services —
-and redrawn every day by [a GitHub Action](.github/workflows/refresh-cards.yml)
-
-</sub>
-</div>
+<sub>graph and numbers above come from a python script in this repo, redrawn daily. no third-party card services.</sub>

@@ -1,32 +1,30 @@
 {
   "user": "HyawiiGithub",
-  "generated_at": "2026-11-13T21:55:27Z",
-  "total_contributions": 53561,
+  "generated_at": "2026-11-13T22:02:21Z",
+  "total_contributions": 53560,
+  "active_days": 128,
   "current_streak": 81,
   "longest_streak": 81,
-  "active_days": 128,
-  "public_repos": 40,
-  "stars": 1,
-  "top_languages": [
+  "languages": [
     {
       "name": "HTML",
-      "percent": 36.51
+      "percent": 43.91
     },
     {
       "name": "JavaScript",
-      "percent": 34.21
+      "percent": 27.31
     },
     {
       "name": "TypeScript",
-      "percent": 20.69
-    },
-    {
-      "name": "Python",
-      "percent": 5.91
+      "percent": 24.98
     },
     {
       "name": "CSS",
-      "percent": 2.48
+      "percent": 2.7
+    },
+    {
+      "name": "Python",
+      "percent": 0.86
     }
   ]
 }
