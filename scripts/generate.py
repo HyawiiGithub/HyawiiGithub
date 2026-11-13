@@ -10,7 +10,9 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import math
 import os
+import random
 import re
 import sys
 import urllib.request
@@ -34,6 +36,7 @@ INK = "#ededf0"
 MUTED = "#8b8b96"
 ACCENT = "#a78bfa"
 POSITIVE = "#4ade80"
+NEGATIVE = "#f87171"
 LEVELS = ["#1b1b22", "#2a2350", "#43348c", "#7c5cf5", "#c9b8ff"]
 
 FONT = "Inter, 'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif"
@@ -376,28 +379,98 @@ def compact_money(amount: float) -> str:
     return f"${amount:,.0f}"
 
 
+HISTORY_START = dt.date(2020, 1, 1)
+PATH_SEED = 20200101
+
+
+def worth_history(end_date: dt.date, end_value: float) -> list[tuple[dt.date, float]]:
+    """Seeded daily market series since 2020 that lands exactly on end_value."""
+    if end_date <= HISTORY_START or end_value <= 0:
+        return [(end_date, max(end_value, 0.0))]
+
+    sessions = (end_date - HISTORY_START).days + 1
+    rng = random.Random(PATH_SEED)
+    opening = rng.uniform(88_000_000, 104_000_000)
+    log_open, log_end = math.log(opening), math.log(end_value)
+
+    # a mean reverting wobble around the trend, so it stays volatile instead of
+    # wandering off into the trillions over six years
+    wobble = [0.0]
+    level = 0.0
+    for _ in range(1, sessions):
+        level = level * 0.995 + rng.gauss(0.0, 0.022)
+        if rng.random() < 0.008:
+            level += rng.choice((-1.0, 1.0)) * rng.uniform(0.05, 0.12)
+        wobble.append(level)
+
+    tail = wobble[-1]
+    out = []
+    for index in range(sessions):
+        progress = index / (sessions - 1)
+        curve = log_open + (log_end - log_open) * progress + wobble[index] - tail * progress
+        out.append((HISTORY_START + dt.timedelta(days=index), math.exp(curve)))
+    return out
+
+
 def render_worth(days: list[tuple[dt.date, int, int]]) -> str:
-    """Net worth curve: every commit adds a million, so the line only goes up."""
-    running = 0
-    series = []
-    for _date, count, _level in days:
-        running += count
-        series.append(running * 1_000_000)
-    worth = series[-1] if series else 0
+    """Market history since 2020 that finishes on the commit derived number."""
+    total = sum(count for _d, count, _l in days)
+    worth = total * 1_000_000
+    today = days[-1][0] if days else dt.date.today()
+    history = worth_history(today, worth)
+    previous = history[-2][1] if len(history) > 1 else worth
+    change = (worth - previous) / previous * 100 if previous else 0.0
     best_day = max((count for _d, count, _l in days), default=0) * 1_000_000
 
-    width, height = 840, 190
-    x0, x1 = 300, 812
-    y0, y1 = 46, 146
-    peak = max(series) or 1
-    step_x = (x1 - x0) / max(1, len(series) - 1)
-    points = [
-        (x0 + index * step_x, y1 - (value / peak) * (y1 - y0))
-        for index, value in enumerate(series)
-    ]
-    line = smooth_path(points)
-    area = line + f" L {x1:.2f} {y1} L {x0:.2f} {y1} Z"
-    last_x, last_y = points[-1] if points else (x1, y1)
+    width, height = 840, 292
+    x0, x1 = 26, 814
+    y0, y1 = 128, 250
+
+    values = [value for _date, value in history]
+    lo, hi = min(values), max(values)
+    lo_log, hi_log = math.log(lo), math.log(hi)
+    spread = (hi_log - lo_log) or 1.0
+
+    def px(index: int) -> float:
+        return x0 + (x1 - x0) * index / max(1, len(history) - 1)
+
+    def py(value: float) -> float:
+        return y1 - (math.log(value) - lo_log) / spread * (y1 - y0)
+
+    sampled = list(range(0, len(history), 2))
+    if sampled[-1] != len(history) - 1:
+        sampled.append(len(history) - 1)
+    parts = [f"M {px(sampled[0]):.1f} {py(history[sampled[0]][1]):.1f}"]
+    parts += [f" L {px(i):.1f} {py(history[i][1]):.1f}" for i in sampled[1:]]
+    line = "".join(parts)
+    area = line + f" L {x1:.1f} {y1} L {x0:.1f} {y1} Z"
+    last_x, last_y = px(len(history) - 1), py(worth)
+
+    grid = []
+    magnitude = 10 ** int(math.floor(math.log10(lo)))
+    while magnitude <= hi:
+        if magnitude >= lo:
+            gy = py(magnitude)
+            grid.append(
+                f'<line x1="{x0}" y1="{gy:.1f}" x2="{x1}" y2="{gy:.1f}" stroke="{EDGE}" '
+                'stroke-dasharray="2 4"/>'
+                f'<text x="{x0 + 4}" y="{gy - 5:.1f}" font-family="{MONO}" font-size="8" '
+                f'fill="{MUTED}">{compact_money(magnitude)}</text>'
+            )
+        magnitude *= 10
+
+    ticks = []
+    for year in range(HISTORY_START.year, today.year + 1):
+        mark = dt.date(year, 1, 1)
+        if not (HISTORY_START <= mark <= today):
+            continue
+        gx = px((mark - HISTORY_START).days)
+        ticks.append(
+            f'<line x1="{gx:.1f}" y1="{y0}" x2="{gx:.1f}" y2="{y1}" stroke="{EDGE}" '
+            'stroke-dasharray="2 4"/>'
+            f'<text x="{gx:.1f}" y="{y1 + 17}" text-anchor="middle" font-family="{MONO}" '
+            f'font-size="8.5" fill="{MUTED}">{year}</text>'
+        )
 
     out = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
@@ -414,22 +487,26 @@ def render_worth(days: list[tuple[dt.date, int, int]]) -> str:
         f'<rect x="0.5" y="0.5" width="{width - 1}" height="{height - 1}" rx="6" '
         f'fill="{CARD}" stroke="{EDGE}"/>',
         f'<text x="26" y="38" font-family="{MONO}" font-size="9.5" letter-spacing="2.2" '
-        f'fill="{MUTED}">NET WORTH</text>',
-        f'<text x="26" y="86" font-family="{DISPLAY}" font-size="36" font-weight="700" '
+        f'fill="{MUTED}">NET WORTH / HYW / USD</text>',
+        f'<text x="{width - 26}" y="40" text-anchor="end" font-family="{MONO}" '
+        f'font-size="11" font-weight="600" fill="{POSITIVE if change >= 0 else NEGATIVE}">'
+        f"{'+' if change >= 0 else ''}{change:.2f}% today</text>",
+        f'<text x="26" y="94" font-family="{DISPLAY}" font-size="38" font-weight="700" '
         f'letter-spacing="-1" fill="{INK}">{compact_money(worth)}</text>',
-        f'<text x="26" y="108" font-family="{MONO}" font-size="9.5" fill="{MUTED}">'
+        f'<text x="26" y="114" font-family="{MONO}" font-size="9.5" fill="{MUTED}">'
         f"${worth:,.0f}</text>",
-                f'<text x="26" y="130" font-family="{MONO}" font-size="9.5" fill="{POSITIVE}">'
+        f'<text x="268" y="114" font-family="{MONO}" font-size="9.5" fill="{MUTED}">'
+        f"{total:,} commits</text>",
+        f'<text x="432" y="114" font-family="{MONO}" font-size="9.5" fill="{POSITIVE}">'
         f"best day {compact_money(best_day)}</text>",
+        *grid,
+        *ticks,
         f'<path d="{area}" fill="url(#worthfill)"/>',
-        f'<path d="{line}" fill="none" stroke="url(#worthline)" stroke-width="2" '
+        f'<path d="{line}" fill="none" stroke="url(#worthline)" stroke-width="1.6" '
         f'stroke-linejoin="round"/>',
-        f'<line x1="{x0}" y1="{y1}" x2="{x1}" y2="{y1}" stroke="{EDGE}"/>',
         f'<circle cx="{last_x:.1f}" cy="{last_y:.1f}" r="3.4" fill="{ACCENT}"/>',
-        f'<text x="{x0}" y="{y1 + 20}" font-family="{MONO}" font-size="9" fill="{MUTED}">'
-        f'{days[0][0].strftime("%b").lower()} {days[0][0].year}</text>',
-        f'<text x="{x1}" y="{y1 + 20}" text-anchor="end" font-family="{MONO}" '
-        f'font-size="9" fill="{MUTED}">today</text>',
+        f'<text x="{x0}" y="{height - 8}" font-family="{MONO}" font-size="8.5" '
+        f'fill="{MUTED}">since jan 2020 / {len(history):,} sessions</text>',
         "</svg>",
     ]
     return "".join(out)
@@ -494,12 +571,20 @@ def main() -> int:
     # the page in docs/ reads this for the hoverable grid
     os.makedirs(DOCS, exist_ok=True)
     total_commits = sum(c for _d, c, _l in days)
+    session_end = days[-1][0] if days else dt.date.today()
+    history = worth_history(session_end, total_commits * 1_000_000)
+    last_change = ((history[-1][1] - history[-2][1]) / history[-2][1] * 100) if len(history) > 1 else 0.0
     payload = {
         "user": USER,
         "generated_at": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "total": total_commits,
         "net_worth": total_commits * 1_000_000,
         "per_commit": 1_000_000,
+        "change_pct": round(last_change, 2),
+        "history": {
+            "start": history[0][0].isoformat(),
+            "values": [round(value) for _date, value in history],
+        },
         "active_days": sum(1 for _d, c, _l in days if c > 0),
         "current_streak": current,
         "longest_streak": longest,

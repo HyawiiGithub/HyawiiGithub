@@ -121,6 +121,9 @@ h2 {
 }
 .head-meta b { color: var(--ink); font-weight: 600; }
 .head-meta .warn { color: #fbbf24; }
+.head-meta .up { color: var(--positive); }
+.head-meta .down { color: var(--negative); }
+#worth-meta { display: flex; gap: 12px; flex-wrap: wrap; }
 
 /* net worth */
 
@@ -150,11 +153,12 @@ h2 {
 }
 
 .worth-chart { position: relative; }
-.worth-chart canvas { display: block; width: 100%; height: 132px; cursor: crosshair; }
+.worth-chart canvas { display: block; width: 100%; height: 150px; cursor: crosshair; }
 
 /* heatmap */
 
-.heatmap-wrap { position: relative; overflow-x: auto; padding-bottom: 4px; }
+.heatmap-wrap { position: relative; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.heatmap-wrap::-webkit-scrollbar { display: none; }
 
 .months { position: relative; height: 15px; margin-left: 32px; min-width: 742px; }
 .month {
@@ -365,6 +369,45 @@ footer {
   gap: 8px;
   align-items: center;
 }
+
+/* markets tape */
+
+.tape {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--bg-sunken);
+  padding: 8px 12px;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+
+.tape-label {
+  font-family: var(--font-mono);
+  font-size: .56rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  padding-right: 10px;
+  border-right: 1px solid var(--rule);
+  flex: none;
+}
+
+.tape-track {
+  display: flex;
+  gap: 8px 18px;
+  flex-wrap: wrap;
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.tick { display: inline-flex; gap: 5px; align-items: baseline; }
+.tick b { color: var(--ink); font-weight: 600; letter-spacing: .04em; }
+.tick .up { color: var(--positive); }
+.tick .down { color: var(--negative); }
 
 @media (max-width: 720px) {
   .worth-body { grid-template-columns: 1fr; gap: 14px; }

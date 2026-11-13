@@ -1,6 +1,7 @@
-/* heatmap with hover tooltips, plus the market game. data.json comes from scripts/generate.py */
+/* heatmap tooltips, the market history chart, the tape and the game. data.json comes from scripts/generate.py */
 
 const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+const DAY_MS = 86400000;
 const CELL = 11;
 const GAP = 3;
 
@@ -15,6 +16,14 @@ function longDate(d) {
   return d.toLocaleDateString('en-US', {
     weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
   }).toLowerCase();
+}
+
+function money(n) {
+  const units = [[1e12, 'T'], [1e9, 'B'], [1e6, 'M'], [1e3, 'K']];
+  for (const [size, suffix] of units) {
+    if (n >= size) return `$${(n / size).toFixed(2)}${suffix}`;
+  }
+  return `$${Math.round(n)}`;
 }
 
 /* ---------------------------------------------------------------- heatmap */
@@ -86,7 +95,6 @@ function renderHeatmap(data) {
   });
   grid.addEventListener('mouseleave', () => { tip.hidden = true; });
   grid.addEventListener('focusout', () => { tip.hidden = true; });
-  window.addEventListener('scroll', () => { tip.hidden = true; }, { passive: true });
 }
 
 function renderStripe(data) {
@@ -103,58 +111,78 @@ function renderStripe(data) {
 
 /* --------------------------------------------------------------- net worth */
 
-function money(n) {
-  const units = [[1e12, 'T'], [1e9, 'B'], [1e6, 'M'], [1e3, 'K']];
-  for (const [size, suffix] of units) {
-    if (n >= size) return `$${(n / size).toFixed(2)}${suffix}`;
-  }
-  return `$${Math.round(n)}`;
-}
-
 function setupWorth(data) {
   const canvas = document.getElementById('worthChart');
   const ctx = canvas.getContext('2d');
   const tip = document.getElementById('tooltip');
-  const per = data.per_commit || 1000000;
+  const start = parseISO(data.history.start);
+  const values = data.history.values;
+  const points = values.map((value, index) => ({
+    value,
+    date: new Date(start.getTime() + index * DAY_MS),
+  }));
 
-  let running = 0;
-  const points = data.days.map(([iso, count]) => {
-    running += count;
-    return { value: running * per, label: longDate(parseISO(iso)) };
-  });
-  const peak = points[points.length - 1].value || 1;
+  const lowValue = Math.min(...values);
+  const highValue = Math.max(...values);
+  const lowLog = Math.log(lowValue);
+  const spread = (Math.log(highValue) - lowLog) || 1;
 
   document.getElementById('worth-value').textContent = money(data.net_worth);
-  document.getElementById('worth-meta').innerHTML = `<b>${fmt(data.total)}</b> commits`;
   document.getElementById('worth-sub').innerHTML =
-    `${fmt(data.net_worth)}<br>since ${MONTHS[parseISO(data.days[0][0]).getMonth()]} ${parseISO(data.days[0][0]).getFullYear()}`;
+    `${fmt(data.net_worth)}<br>since jan 2020`;
+  const pct = data.change_pct || 0;
+  document.getElementById('worth-meta').innerHTML =
+    `<span class="${pct >= 0 ? 'up' : 'down'}">${pct >= 0 ? '+' : ''}${pct.toFixed(2)}% today</span>`
+    + `<span>${fmt(data.total)} commits</span>`;
 
   let hover = -1;
 
   function draw() {
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     const w = canvas.clientWidth || 560;
-    const h = canvas.clientHeight || 132;
+    const h = canvas.clientHeight || 150;
     if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
       canvas.width = Math.round(w * dpr);
       canvas.height = Math.round(h * dpr);
     }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
+    ctx.font = '9px "SF Mono", Menlo, Consolas, monospace';
 
     const padTop = 10;
-    const padBottom = 6;
+    const padBottom = 18;
     const x = (i) => (i / (points.length - 1)) * (w - 2) + 1;
-    const y = (v) => (h - padBottom) - (v / peak) * (h - padBottom - padTop);
+    const y = (v) => (h - padBottom) - ((Math.log(v) - lowLog) / spread) * (h - padBottom - padTop);
 
-    ctx.strokeStyle = 'rgba(255,255,255,.05)';
-    ctx.lineWidth = 1;
-    for (let i = 0; i <= 2; i += 1) {
-      const gy = padTop + (h - padTop - padBottom) * (i / 2);
+    for (let exp = Math.floor(Math.log10(lowValue)); exp <= Math.ceil(Math.log10(highValue)); exp += 1) {
+      const level = Math.pow(10, exp);
+      if (level < lowValue || level > highValue) continue;
+      const gy = y(level);
+      ctx.strokeStyle = 'rgba(255,255,255,.05)';
+      ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(0, gy);
       ctx.lineTo(w, gy);
       ctx.stroke();
+      ctx.fillStyle = 'rgba(139,139,150,.75)';
+      ctx.fillText(money(level), 2, gy - 3);
+    }
+
+    const endTime = points[points.length - 1].date.getTime();
+    for (let year = start.getFullYear() + 1; year <= points[points.length - 1].date.getFullYear(); year += 1) {
+      const mark = Date.UTC(year, 0, 1);
+      const index = Math.round((mark - start.getTime()) / DAY_MS);
+      if (index <= 0 || index >= points.length || mark > endTime) continue;
+      const gx = x(index);
+      ctx.strokeStyle = 'rgba(255,255,255,.05)';
+      ctx.beginPath();
+      ctx.moveTo(gx, padTop);
+      ctx.lineTo(gx, h - padBottom);
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(139,139,150,.75)';
+      ctx.textAlign = 'center';
+      ctx.fillText(String(year), gx, h - 5);
+      ctx.textAlign = 'left';
     }
 
     ctx.beginPath();
@@ -163,7 +191,7 @@ function setupWorth(data) {
       else ctx.lineTo(x(i), y(p.value));
     });
     ctx.strokeStyle = '#a78bfa';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 1.4;
     ctx.lineJoin = 'round';
     ctx.stroke();
 
@@ -171,7 +199,7 @@ function setupWorth(data) {
     ctx.lineTo(x(0), h);
     ctx.closePath();
     const fill = ctx.createLinearGradient(0, padTop, 0, h);
-    fill.addColorStop(0, 'rgba(167,139,250,.42)');
+    fill.addColorStop(0, 'rgba(167,139,250,.34)');
     fill.addColorStop(1, 'rgba(167,139,250,0)');
     ctx.fillStyle = fill;
     ctx.fill();
@@ -180,34 +208,31 @@ function setupWorth(data) {
     const hx = x(index);
     const hy = y(points[index].value);
     if (hover >= 0) {
-      ctx.strokeStyle = 'rgba(255,255,255,.22)';
+      ctx.strokeStyle = 'rgba(255,255,255,.25)';
+      ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(hx, 0);
-      ctx.lineTo(hx, h);
+      ctx.moveTo(hx, padTop);
+      ctx.lineTo(hx, h - padBottom);
       ctx.stroke();
     }
     ctx.beginPath();
-    ctx.arc(hx, hy, 3.2, 0, Math.PI * 2);
+    ctx.arc(hx, hy, 3, 0, Math.PI * 2);
     ctx.fillStyle = '#c9b8ff';
     ctx.fill();
   }
 
-  function indexFrom(clientX) {
-    const rect = canvas.getBoundingClientRect();
-    const ratio = (clientX - rect.left) / rect.width;
-    return Math.max(0, Math.min(points.length - 1, Math.round(ratio * (points.length - 1))));
-  }
-
   canvas.addEventListener('mousemove', (event) => {
-    hover = indexFrom(event.clientX);
-    draw();
     const rect = canvas.getBoundingClientRect();
+    const ratio = (event.clientX - rect.left) / rect.width;
+    hover = Math.max(0, Math.min(points.length - 1, Math.round(ratio * (points.length - 1))));
+    draw();
+
     const point = points[hover];
-    tip.innerHTML = `<strong>${money(point.value)}</strong><span>${point.label}</span>`;
+    tip.innerHTML = `<strong>${money(point.value)}</strong><span>${longDate(point.date)}</span>`;
     tip.hidden = false;
     const px = rect.left + (hover / (points.length - 1)) * rect.width;
-    tip.style.left = `${Math.min(Math.max(px, 90), window.innerWidth - 90)}px`;
-    tip.style.top = `${rect.top + 30}px`;
+    tip.style.left = `${Math.min(Math.max(px, 92), window.innerWidth - 92)}px`;
+    tip.style.top = `${rect.top + 34}px`;
   });
 
   canvas.addEventListener('mouseleave', () => {
@@ -220,7 +245,34 @@ function setupWorth(data) {
   draw();
 }
 
-/* ------------------------------------------------------------------- game */
+/* -------------------------------------------------------------------- tape */
+
+function setupTape() {
+  const track = document.getElementById('tape-track');
+  if (!track) return;
+  const rows = [
+    ['HYW', 2.14], ['AHD', 4.63], ['CRN', -1.28], ['VNG', 0.74],
+    ['JVS', 12.41], ['DMW', -3.19], ['FLS', 1.86], ['USSR', -0.42],
+  ];
+
+  const render = () => {
+    track.innerHTML = rows.map(([name, pct]) => {
+      const up = pct >= 0;
+      return `<span class="tick"><b>${name}</b>`
+        + `<span class="${up ? 'up' : 'down'}">${up ? '+' : ''}${pct.toFixed(2)}%</span></span>`;
+    }).join('');
+  };
+
+  render();
+  setInterval(() => {
+    rows.forEach((row) => {
+      row[1] = Math.max(-18, Math.min(18, row[1] + (Math.random() - 0.5) * 0.9));
+    });
+    render();
+  }, 2600);
+}
+
+/* -------------------------------------------------------------------- game */
 
 function setupGame() {
   const canvas = document.getElementById('chart');
@@ -287,7 +339,7 @@ function setupGame() {
       if (i === 0) ctx.moveTo(px, py);
       else ctx.lineTo(px, py);
     });
-    ctx.strokeStyle = '#d4a94e';
+    ctx.strokeStyle = '#a78bfa';
     ctx.lineWidth = 2;
     ctx.lineJoin = 'round';
     ctx.stroke();
@@ -296,8 +348,8 @@ function setupGame() {
     ctx.lineTo(x(offset), h);
     ctx.closePath();
     const grad = ctx.createLinearGradient(0, pad, 0, h);
-    grad.addColorStop(0, 'rgba(196,18,46,.35)');
-    grad.addColorStop(1, 'rgba(196,18,46,0)');
+    grad.addColorStop(0, 'rgba(167,139,250,.34)');
+    grad.addColorStop(1, 'rgba(167,139,250,0)');
     ctx.fillStyle = grad;
     ctx.fill();
 
@@ -305,11 +357,11 @@ function setupGame() {
     const ly = y(history[history.length - 1]);
     ctx.beginPath();
     ctx.arc(lx, ly, 6, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(196,18,46,.35)';
+    ctx.fillStyle = 'rgba(167,139,250,.28)';
     ctx.fill();
     ctx.beginPath();
     ctx.arc(lx, ly, 3.2, 0, Math.PI * 2);
-    ctx.fillStyle = '#ff4d67';
+    ctx.fillStyle = '#c9b8ff';
     ctx.fill();
   }
 
@@ -438,6 +490,7 @@ async function boot() {
   } catch (error) {
     document.getElementById('head-total').textContent = `could not load data.json (${error.message})`;
   }
+  setupTape();
   setupGame();
 }
 
