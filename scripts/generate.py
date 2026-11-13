@@ -381,6 +381,8 @@ def compact_money(amount: float) -> str:
 
 HISTORY_START = dt.date(2020, 1, 1)
 PATH_SEED = 20200101
+PER_COMMIT = 5_137  # keeps the total in the low hundreds of millions
+WORTH_CEILING = 299_400_000.0
 
 
 def worth_history(end_date: dt.date, end_value: float) -> list[tuple[dt.date, float]]:
@@ -407,7 +409,12 @@ def worth_history(end_date: dt.date, end_value: float) -> list[tuple[dt.date, fl
     out = []
     for index in range(sessions):
         progress = index / (sessions - 1)
-        curve = log_open + (log_end - log_open) * progress + wobble[index] - tail * progress
+        trend = math.exp(log_open + (log_end - log_open) * progress)
+        # swings get scaled to the room left under the ceiling, so the cap compresses
+        # the moves near the top instead of slicing a flat lid across the line
+        headroom = math.log(WORTH_CEILING / trend)
+        limit = max(0.02, min(headroom * 0.9, 0.55))
+        curve = math.log(trend) + limit * math.tanh((wobble[index] - tail * progress) / limit)
         out.append((HISTORY_START + dt.timedelta(days=index), math.exp(curve)))
     return out
 
@@ -415,12 +422,12 @@ def worth_history(end_date: dt.date, end_value: float) -> list[tuple[dt.date, fl
 def render_worth(days: list[tuple[dt.date, int, int]]) -> str:
     """Market history since 2020 that finishes on the commit derived number."""
     total = sum(count for _d, count, _l in days)
-    worth = total * 1_000_000
+    worth = total * PER_COMMIT
     today = days[-1][0] if days else dt.date.today()
     history = worth_history(today, worth)
     previous = history[-2][1] if len(history) > 1 else worth
     change = (worth - previous) / previous * 100 if previous else 0.0
-    best_day = max((count for _d, count, _l in days), default=0) * 1_000_000
+    best_day = max((count for _d, count, _l in days), default=0) * PER_COMMIT
 
     width, height = 840, 292
     x0, x1 = 78, 814
@@ -447,17 +454,18 @@ def render_worth(days: list[tuple[dt.date, int, int]]) -> str:
     last_x, last_y = px(len(history) - 1), py(worth)
 
     grid = []
-    magnitude = 10 ** int(math.floor(math.log10(lo)))
-    while magnitude <= hi:
-        if magnitude >= lo:
-            gy = py(magnitude)
+    for exponent in range(int(math.floor(math.log10(lo))), int(math.ceil(math.log10(hi))) + 1):
+        for step in (1, 2, 5):
+            level = (10 ** exponent) * step
+            if not (lo <= level <= hi):
+                continue
+            gy = py(level)
             grid.append(
                 f'<line x1="{x0}" y1="{gy:.1f}" x2="{x1}" y2="{gy:.1f}" stroke="{EDGE}" '
                 'stroke-dasharray="2 4"/>'
                 f'<text x="30" y="{gy + 3:.1f}" font-family="{MONO}" font-size="8" '
-                f'fill="{MUTED}">{compact_money(magnitude)}</text>'
+                f'fill="{MUTED}">{compact_money(level)}</text>'
             )
-        magnitude *= 10
 
     ticks = []
     for year in range(HISTORY_START.year, today.year + 1):
@@ -572,14 +580,14 @@ def main() -> int:
     os.makedirs(DOCS, exist_ok=True)
     total_commits = sum(c for _d, c, _l in days)
     session_end = days[-1][0] if days else dt.date.today()
-    history = worth_history(session_end, total_commits * 1_000_000)
+    history = worth_history(session_end, total_commits * PER_COMMIT)
     last_change = ((history[-1][1] - history[-2][1]) / history[-2][1] * 100) if len(history) > 1 else 0.0
     payload = {
         "user": USER,
         "generated_at": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "total": total_commits,
-        "net_worth": total_commits * 1_000_000,
-        "per_commit": 1_000_000,
+        "net_worth": total_commits * PER_COMMIT,
+        "per_commit": PER_COMMIT,
         "change_pct": round(last_change, 2),
         "history": {
             "start": history[0][0].isoformat(),

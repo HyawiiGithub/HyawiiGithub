@@ -155,18 +155,22 @@ function setupWorth(data) {
     const x = (i) => PAD_LEFT + (i / (points.length - 1)) * (w - PAD_LEFT - 2);
     const y = (v) => (h - padBottom) - ((Math.log(v) - lowLog) / spread) * (h - padBottom - padTop);
 
-    for (let exp = Math.floor(Math.log10(lowValue)); exp <= Math.ceil(Math.log10(highValue)); exp += 1) {
-      const level = Math.pow(10, exp);
-      if (level < lowValue || level > highValue) continue;
-      const gy = y(level);
-      ctx.strokeStyle = 'rgba(255,255,255,.05)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(PAD_LEFT, gy);
-      ctx.lineTo(w, gy);
-      ctx.stroke();
-      ctx.fillStyle = 'rgba(139,139,150,.75)';
-      ctx.fillText(money(level), 2, gy + 3);
+    const firstExp = Math.floor(Math.log10(lowValue));
+    const lastExp = Math.ceil(Math.log10(highValue));
+    for (let exp = firstExp; exp <= lastExp; exp += 1) {
+      for (const step of [1, 2, 5]) {
+        const level = Math.pow(10, exp) * step;
+        if (level < lowValue || level > highValue) continue;
+        const gy = y(level);
+        ctx.strokeStyle = 'rgba(255,255,255,.05)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(PAD_LEFT, gy);
+        ctx.lineTo(w, gy);
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(139,139,150,.75)';
+        ctx.fillText(money(level), 2, gy + 3);
+      }
     }
 
     const endTime = points[points.length - 1].date.getTime();

@@ -19,7 +19,7 @@ one commit moves the number. hover a square on [the live page](https://hyawiigit
 53,566 contributions  |  128 active days  |  81 day streak (best 81)
 last 30 days  9,222  |  busiest day  1,397 (sep 27)
 
-html 44%   javascript 27%   typescript 25%   css 3%   python 1%
+html 43%   javascript 28%   typescript 26%   css 3%   python 1%
 ```
 <!-- stats:end -->
 
