@@ -23,14 +23,18 @@ GRAPHQL = "https://api.github.com/graphql"
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ASSETS = os.path.join(ROOT, "assets")
+DOCS = os.path.join(ROOT, "docs")
 README = os.path.join(ROOT, "README.md")
 
-FONT = "ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif"
+# palette taken from vanguard-group/styles.css so this matches the rest of the projects
+CARD = "#0d1633"
+EDGE = "#1e2750"
+MUTED = "#9aa3c7"
+GOLD = "#d4a94e"
+LEVELS = ["#212c66", "#4a1220", "#8f0d22", "#C4122E", "#e8b04b"]
 
-# github's own green ramp, so it sits next to the real graph without shouting
-LEVELS = ["#21262d", "#0e4429", "#006d32", "#26a641", "#39d353"]
-LABEL = "#8b949e"
-FAINT = "#6e7681"
+FONT = "Inter, ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif"
+MONO = "ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace"
 
 
 # --------------------------------------------------------------------------- http
@@ -230,12 +234,13 @@ def render_graph(days: list[tuple[dt.date, int, int]]) -> str:
     weeks = week_starts(days)
     shade = levels(days)
     counts = {d: c for d, c, _l in days}
+    total = sum(counts.values())
 
     cell, step = 11, 15
-    left, top = 30, 20
-    grid_w = len(weeks) * step - (step - cell)
+    width = 840
+    left, top = 36, 84
     grid_h = 7 * step - (step - cell)
-    width, height = left + grid_w + 4, top + grid_h + 6
+    height = top + grid_h + 24
 
     # cells are drawn as-is: no resting state of opacity 0, so the grid still reads
     # if the image is cached, throttled or rendered without animations. today's cell
@@ -243,22 +248,28 @@ def render_graph(days: list[tuple[dt.date, int, int]]) -> str:
     out = [
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
         f'viewBox="0 0 {width} {height}" role="img" '
-        f'aria-label="contribution graph for the last year">'
+        f'aria-label="contribution graph for the last year">',
+        f'<rect x="0.5" y="0.5" width="{width - 1}" height="{height - 1}" rx="16" '
+        f'fill="{CARD}" stroke="{EDGE}"/>',
+        f'<text x="26" y="34" font-family="{MONO}" font-size="9.5" letter-spacing="2.2" '
+        f'fill="{MUTED}">CONTRIBUTIONS \u00b7 LAST 12 MONTHS</text>',
+        f'<text x="{width - 26}" y="34" text-anchor="end" font-family="{MONO}" '
+        f'font-size="12" font-weight="700" fill="{GOLD}">{total:,} this year</text>',
     ]
 
     previous_month = None
     for index, week in enumerate(weeks):
         if week.month != previous_month and index < len(weeks) - 1:
             out.append(
-                f'<text x="{left + index * step}" y="{top - 7}" font-family="{FONT}" '
-                f'font-size="9.5" fill="{FAINT}">{week.strftime("%b").lower()}</text>'
+                f'<text x="{left + index * step}" y="{top - 10}" font-family="{MONO}" '
+                f'font-size="9" fill="{MUTED}">{week.strftime("%b").lower()}</text>'
             )
         previous_month = week.month
 
     for row, label in ((1, "mon"), (3, "wed"), (5, "fri")):
         out.append(
-            f'<text x="{left - 8}" y="{top + row * step + 8}" font-family="{FONT}" '
-            f'font-size="9.5" text-anchor="end" fill="{FAINT}">{label}</text>'
+            f'<text x="{left - 10}" y="{top + row * step + 9}" font-family="{MONO}" '
+            f'font-size="9" text-anchor="end" fill="{MUTED}">{label}</text>'
         )
 
     for index, week in enumerate(weeks):
@@ -281,7 +292,7 @@ def render_graph(days: list[tuple[dt.date, int, int]]) -> str:
             y = top + (today.weekday() + 1) % 7 * step
             out.append(
                 f'<rect x="{x}" y="{y}" width="{cell}" height="{cell}" rx="2" '
-                f'fill="none" stroke="#39d353" stroke-width="1.4">'
+                f'fill="none" stroke="{GOLD}" stroke-width="1.4">'
                 '<animate attributeName="stroke-opacity" values="1;0.25;1" dur="3s" '
                 'repeatCount="indefinite"/></rect>'
             )
@@ -337,6 +348,23 @@ def write_readme(block: str) -> bool:
     return True
 
 
+def render_play_button() -> str:
+    width, height = 240, 44
+    return (
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
+        f'viewBox="0 0 {width} {height}" role="img" aria-label="play the market game">'
+        '<defs><linearGradient id="btn" x1="0" y1="0" x2="0" y2="1">'
+        '<stop offset="0" stop-color="#e01a3a"/><stop offset="1" stop-color="#C4122E"/>'
+        "</linearGradient></defs>"
+        f'<rect x="0.5" y="0.5" width="{width - 1}" height="{height - 1}" rx="12" '
+        f'fill="url(#btn)" stroke="#7d1226"/>'
+        f'<path d="M20 15 l11 7 -11 7 z" fill="{GOLD}"/>'
+        f'<text x="42" y="27" font-family="{MONO}" font-size="10.5" font-weight="700" '
+        'letter-spacing="1.6" fill="#ffffff">PLAY THE MARKET GAME</text>'
+        "</svg>"
+    )
+
+
 # ---------------------------------------------------------------------------- main
 
 
@@ -360,25 +388,34 @@ def main() -> int:
         fh.write(graph)
     print(f"  wrote assets/graph.svg ({len(graph) / 1024:.1f} KB)")
 
+    with open(os.path.join(ASSETS, "play.svg"), "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(render_play_button())
+    print("  wrote assets/play.svg")
+
     block = stats_block(days, languages)
     print(f"  README block {'updated' if write_readme(block) else 'unchanged'}")
     print(block)
 
     current, longest = streaks(days)
-    with open(os.path.join(ASSETS, "data.json"), "w", encoding="utf-8", newline="\n") as fh:
-        json.dump(
-            {
-                "user": USER,
-                "generated_at": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-                "total_contributions": sum(c for _d, c, _l in days),
-                "active_days": sum(1 for _d, c, _l in days if c > 0),
-                "current_streak": current,
-                "longest_streak": longest,
-                "languages": [{"name": n, "percent": round(p, 2)} for n, p in languages[:5]],
-            },
-            fh,
-            indent=2,
-        )
+    shade = levels(days)
+    peak_date, peak = max(((d, c) for d, c, _l in days), key=lambda pair: pair[1])
+
+    # the page in docs/ reads this for the hoverable grid
+    os.makedirs(DOCS, exist_ok=True)
+    payload = {
+        "user": USER,
+        "generated_at": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "total": sum(c for _d, c, _l in days),
+        "active_days": sum(1 for _d, c, _l in days if c > 0),
+        "current_streak": current,
+        "longest_streak": longest,
+        "busiest": {"date": peak_date.isoformat(), "count": peak},
+        "languages": [{"name": n, "percent": round(p, 1)} for n, p in languages[:5]],
+        "days": [[d.isoformat(), c, shade[d]] for d, c, _l in days],
+    }
+    with open(os.path.join(DOCS, "data.json"), "w", encoding="utf-8", newline="\n") as fh:
+        json.dump(payload, fh, separators=(",", ":"))
+    print("  wrote docs/data.json")
     return 0
 
 

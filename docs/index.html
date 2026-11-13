@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>hyawii</title>
+<meta name="description" content="i just code anything">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="bg-glow" aria-hidden="true"></div>
+
+<header class="topbar">
+  <span class="pulse-dot" aria-hidden="true"></span>
+  rebuilt every day by <a href="https://github.com/HyawiiGithub/HyawiiGithub">a script in the repo</a>
+</header>
+
+<main>
+  <div class="brand">
+    <strong>HYAWII</strong>
+    <small>i just code anything</small>
+  </div>
+
+  <section class="card" aria-labelledby="contrib-title">
+    <div class="card-head">
+      <h2 id="contrib-title">contributions</h2>
+      <div class="head-meta"><span id="head-total">loading</span></div>
+    </div>
+
+    <div class="heatmap-wrap">
+      <div class="months" id="months"></div>
+      <div class="heatmap-body">
+        <div class="weekdays" aria-hidden="true">
+          <span></span><span>mon</span><span></span><span>wed</span><span></span><span>fri</span><span></span>
+        </div>
+        <div class="grid" id="grid" role="img" aria-label="contribution graph for the last year"></div>
+      </div>
+      <div class="legend">
+        <span>less</span>
+        <i class="lv0"></i><i class="lv1"></i><i class="lv2"></i><i class="lv3"></i><i class="lv4"></i>
+        <span>more</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="stripe" id="stripe" aria-label="summary"></section>
+
+  <section class="card" id="game" aria-labelledby="game-title">
+    <div class="card-head">
+      <h2 id="game-title">market game</h2>
+      <div class="head-meta" id="hud"></div>
+    </div>
+    <p class="lede">30 seconds, 1000 gold, one very nervous price line. keys <b>b</b> and <b>s</b> work too.</p>
+    <div class="chart-wrap">
+      <canvas id="chart" aria-label="price chart"></canvas>
+      <div class="overlay" id="overlay">
+        <div class="result" id="result"></div>
+        <button class="btn btn-red" id="start" type="button">start round</button>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-gold" id="buy" type="button">buy</button>
+      <button class="btn btn-ghost" id="sell" type="button">sell</button>
+      <span class="hint" id="hint">buy the dips, sell the peaks</span>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <a href="https://github.com/HyawiiGithub">github</a>
+  <span>/</span>
+  <a href="https://nohello.net">nohello.net</a>
+</footer>
+
+<div class="tooltip" id="tooltip" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>
