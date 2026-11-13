@@ -132,8 +132,7 @@ function setupWorth(data) {
     `${fmt(data.net_worth)}<br>since jan 2020`;
   const pct = data.change_pct || 0;
   document.getElementById('worth-meta').innerHTML =
-    `<span class="${pct >= 0 ? 'up' : 'down'}">${pct >= 0 ? '+' : ''}${pct.toFixed(2)}% today</span>`
-    + `<span>${fmt(data.total)} commits</span>`;
+    `<span class="${pct >= 0 ? 'up' : 'down'}">${pct >= 0 ? '+' : ''}${pct.toFixed(2)}% today</span>`;
 
   const PAD_LEFT = 46;
   let hover = -1;
@@ -256,8 +255,8 @@ function setupTape() {
   const track = document.getElementById('tape-track');
   if (!track) return;
   const rows = [
-    ['HYW', 2.14], ['AHD', 4.63], ['CRN', -1.28], ['VNG', 0.74],
-    ['JVS', 12.41], ['DMW', -3.19], ['FLS', 1.86], ['USSR', -0.42],
+    ['NYSE', 0.42], ['NASDAQ', 1.18], ['LSE', -0.31], ['TSE', 0.76],
+    ['HKEX', -0.64], ['EURONEXT', 0.23], ['SSE', 1.05], ['TSX', -0.18],
   ];
 
   const render = () => {
@@ -271,7 +270,7 @@ function setupTape() {
   render();
   setInterval(() => {
     rows.forEach((row) => {
-      row[1] = Math.max(-18, Math.min(18, row[1] + (Math.random() - 0.5) * 0.9));
+      row[1] = Math.max(-3.6, Math.min(3.6, row[1] + (Math.random() - 0.5) * 0.22));
     });
     render();
   }, 2600);

@@ -381,7 +381,7 @@ def compact_money(amount: float) -> str:
 
 HISTORY_START = dt.date(2020, 1, 1)
 PATH_SEED = 20200101
-PER_COMMIT = 5_137  # keeps the total in the low hundreds of millions
+PER_COMMIT = 4_953  # keeps the total in the low hundreds of millions
 WORTH_CEILING = 299_400_000.0
 
 
@@ -503,9 +503,7 @@ def render_worth(days: list[tuple[dt.date, int, int]]) -> str:
         f'letter-spacing="-1" fill="{INK}">{compact_money(worth)}</text>',
         f'<text x="26" y="114" font-family="{MONO}" font-size="9.5" fill="{MUTED}">'
         f"${worth:,.0f}</text>",
-        f'<text x="268" y="114" font-family="{MONO}" font-size="9.5" fill="{MUTED}">'
-        f"{total:,} commits</text>",
-        f'<text x="432" y="114" font-family="{MONO}" font-size="9.5" fill="{POSITIVE}">'
+        f'<text x="268" y="114" font-family="{MONO}" font-size="9.5" fill="{POSITIVE}">'
         f"best day {compact_money(best_day)}</text>",
         *grid,
         *ticks,
