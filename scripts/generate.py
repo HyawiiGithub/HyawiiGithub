@@ -26,15 +26,19 @@ ASSETS = os.path.join(ROOT, "assets")
 DOCS = os.path.join(ROOT, "docs")
 README = os.path.join(ROOT, "README.md")
 
-# palette taken from vanguard-group/styles.css so this matches the rest of the projects
-CARD = "#0d1633"
-EDGE = "#1e2750"
-MUTED = "#9aa3c7"
-GOLD = "#d4a94e"
-LEVELS = ["#212c66", "#4a1220", "#8f0d22", "#C4122E", "#e8b04b"]
+# crown keeps its base tokens in src/web/styles.css, so the cards use the same ones
+BG = "#09090b"
+CARD = "#131318"
+EDGE = "#232329"
+INK = "#ededf0"
+MUTED = "#8b8b96"
+ACCENT = "#a78bfa"
+POSITIVE = "#4ade80"
+LEVELS = ["#1b1b22", "#2a2350", "#43348c", "#7c5cf5", "#c9b8ff"]
 
-FONT = "Inter, ui-sans-serif, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif"
-MONO = "ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace"
+FONT = "Inter, 'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif"
+DISPLAY = "'Helvetica Neue', Helvetica, Arial, sans-serif"
+MONO = "'SF Mono', Menlo, Consolas, ui-monospace, monospace"
 
 
 # --------------------------------------------------------------------------- http
@@ -249,12 +253,12 @@ def render_graph(days: list[tuple[dt.date, int, int]]) -> str:
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
         f'viewBox="0 0 {width} {height}" role="img" '
         f'aria-label="contribution graph for the last year">',
-        f'<rect x="0.5" y="0.5" width="{width - 1}" height="{height - 1}" rx="16" '
+        f'<rect x="0.5" y="0.5" width="{width - 1}" height="{height - 1}" rx="6" '
         f'fill="{CARD}" stroke="{EDGE}"/>',
         f'<text x="26" y="34" font-family="{MONO}" font-size="9.5" letter-spacing="2.2" '
-        f'fill="{MUTED}">CONTRIBUTIONS \u00b7 LAST 12 MONTHS</text>',
+        f'fill="{MUTED}">CONTRIBUTIONS / LAST 12 MONTHS</text>',
         f'<text x="{width - 26}" y="34" text-anchor="end" font-family="{MONO}" '
-        f'font-size="12" font-weight="700" fill="{GOLD}">{total:,} this year</text>',
+        f'font-size="12" font-weight="700" fill="{ACCENT}">{total:,} this year</text>',
     ]
 
     previous_month = None
@@ -292,7 +296,7 @@ def render_graph(days: list[tuple[dt.date, int, int]]) -> str:
             y = top + (today.weekday() + 1) % 7 * step
             out.append(
                 f'<rect x="{x}" y="{y}" width="{cell}" height="{cell}" rx="2" '
-                f'fill="none" stroke="{GOLD}" stroke-width="1.4">'
+                f'fill="none" stroke="{ACCENT}" stroke-width="1.4">'
                 '<animate attributeName="stroke-opacity" values="1;0.25;1" dur="3s" '
                 'repeatCount="indefinite"/></rect>'
             )
@@ -348,17 +352,100 @@ def write_readme(block: str) -> bool:
     return True
 
 
+def smooth_path(points: list[tuple[float, float]]) -> str:
+    if not points:
+        return ""
+    out = [f"M {points[0][0]:.2f} {points[0][1]:.2f}"]
+    total = len(points)
+    for index in range(total - 1):
+        p0 = points[index - 1] if index > 0 else points[index]
+        p1, p2 = points[index], points[index + 1]
+        p3 = points[index + 2] if index + 2 < total else points[index + 1]
+        c1 = (p1[0] + (p2[0] - p0[0]) / 6.0, p1[1] + (p2[1] - p0[1]) / 6.0)
+        c2 = (p2[0] - (p3[0] - p1[0]) / 6.0, p2[1] - (p3[1] - p1[1]) / 6.0)
+        out.append(
+            f" C {c1[0]:.2f} {c1[1]:.2f}, {c2[0]:.2f} {c2[1]:.2f}, {p2[0]:.2f} {p2[1]:.2f}"
+        )
+    return "".join(out)
+
+
+def compact_money(amount: float) -> str:
+    for size, suffix in ((10 ** 12, "T"), (10 ** 9, "B"), (10 ** 6, "M"), (10 ** 3, "K")):
+        if amount >= size:
+            return f"${amount / size:,.2f}{suffix}"
+    return f"${amount:,.0f}"
+
+
+def render_worth(days: list[tuple[dt.date, int, int]]) -> str:
+    """Net worth curve: every commit adds a million, so the line only goes up."""
+    running = 0
+    series = []
+    for _date, count, _level in days:
+        running += count
+        series.append(running * 1_000_000)
+    worth = series[-1] if series else 0
+    best_day = max((count for _d, count, _l in days), default=0) * 1_000_000
+
+    width, height = 840, 190
+    x0, x1 = 300, 812
+    y0, y1 = 46, 146
+    peak = max(series) or 1
+    step_x = (x1 - x0) / max(1, len(series) - 1)
+    points = [
+        (x0 + index * step_x, y1 - (value / peak) * (y1 - y0))
+        for index, value in enumerate(series)
+    ]
+    line = smooth_path(points)
+    area = line + f" L {x1:.2f} {y1} L {x0:.2f} {y1} Z"
+    last_x, last_y = points[-1] if points else (x1, y1)
+
+    out = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
+        f'viewBox="0 0 {width} {height}" role="img" aria-label="net worth over the last year">',
+        "<defs>",
+        '<linearGradient id="worthfill" x1="0" y1="0" x2="0" y2="1">'
+        '<stop offset="0" stop-color="#a78bfa" stop-opacity="0.42"/>'
+        '<stop offset="1" stop-color="#a78bfa" stop-opacity="0"/>'
+        "</linearGradient>",
+        f'<linearGradient id="worthline" x1="0" y1="0" x2="1" y2="0">'
+        f'<stop offset="0" stop-color="#6d5bd0"/><stop offset="1" stop-color="{ACCENT}"/>'
+        "</linearGradient>",
+        "</defs>",
+        f'<rect x="0.5" y="0.5" width="{width - 1}" height="{height - 1}" rx="6" '
+        f'fill="{CARD}" stroke="{EDGE}"/>',
+        f'<text x="26" y="38" font-family="{MONO}" font-size="9.5" letter-spacing="2.2" '
+        f'fill="{MUTED}">NET WORTH</text>',
+        f'<text x="26" y="86" font-family="{DISPLAY}" font-size="36" font-weight="700" '
+        f'letter-spacing="-1" fill="{INK}">{compact_money(worth)}</text>',
+        f'<text x="26" y="108" font-family="{MONO}" font-size="9.5" fill="{MUTED}">'
+        f"${worth:,.0f}</text>",
+                f'<text x="26" y="130" font-family="{MONO}" font-size="9.5" fill="{POSITIVE}">'
+        f"best day {compact_money(best_day)}</text>",
+        f'<path d="{area}" fill="url(#worthfill)"/>',
+        f'<path d="{line}" fill="none" stroke="url(#worthline)" stroke-width="2" '
+        f'stroke-linejoin="round"/>',
+        f'<line x1="{x0}" y1="{y1}" x2="{x1}" y2="{y1}" stroke="{EDGE}"/>',
+        f'<circle cx="{last_x:.1f}" cy="{last_y:.1f}" r="3.4" fill="{ACCENT}"/>',
+        f'<text x="{x0}" y="{y1 + 20}" font-family="{MONO}" font-size="9" fill="{MUTED}">'
+        f'{days[0][0].strftime("%b").lower()} {days[0][0].year}</text>',
+        f'<text x="{x1}" y="{y1 + 20}" text-anchor="end" font-family="{MONO}" '
+        f'font-size="9" fill="{MUTED}">today</text>',
+        "</svg>",
+    ]
+    return "".join(out)
+
+
 def render_play_button() -> str:
     width, height = 240, 44
     return (
         f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" '
         f'viewBox="0 0 {width} {height}" role="img" aria-label="play the market game">'
         '<defs><linearGradient id="btn" x1="0" y1="0" x2="0" y2="1">'
-        '<stop offset="0" stop-color="#e01a3a"/><stop offset="1" stop-color="#C4122E"/>'
+        '<stop offset="0" stop-color="#8f74ff"/><stop offset="1" stop-color="#6d5bd0"/>'
         "</linearGradient></defs>"
-        f'<rect x="0.5" y="0.5" width="{width - 1}" height="{height - 1}" rx="12" '
-        f'fill="url(#btn)" stroke="#7d1226"/>'
-        f'<path d="M20 15 l11 7 -11 7 z" fill="{GOLD}"/>'
+        f'<rect x="0.5" y="0.5" width="{width - 1}" height="{height - 1}" rx="4" '
+        f'fill="url(#btn)" stroke="#4b3f8f"/>'
+        f'<path d="M20 15 l11 7 -11 7 z" fill="#ffffff"/>'
         f'<text x="42" y="27" font-family="{MONO}" font-size="10.5" font-weight="700" '
         'letter-spacing="1.6" fill="#ffffff">PLAY THE MARKET GAME</text>'
         "</svg>"
@@ -388,6 +475,10 @@ def main() -> int:
         fh.write(graph)
     print(f"  wrote assets/graph.svg ({len(graph) / 1024:.1f} KB)")
 
+    with open(os.path.join(ASSETS, "worth.svg"), "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(render_worth(days))
+    print("  wrote assets/worth.svg")
+
     with open(os.path.join(ASSETS, "play.svg"), "w", encoding="utf-8", newline="\n") as fh:
         fh.write(render_play_button())
     print("  wrote assets/play.svg")
@@ -402,10 +493,13 @@ def main() -> int:
 
     # the page in docs/ reads this for the hoverable grid
     os.makedirs(DOCS, exist_ok=True)
+    total_commits = sum(c for _d, c, _l in days)
     payload = {
         "user": USER,
         "generated_at": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "total": sum(c for _d, c, _l in days),
+        "total": total_commits,
+        "net_worth": total_commits * 1_000_000,
+        "per_commit": 1_000_000,
         "active_days": sum(1 for _d, c, _l in days if c > 0),
         "current_streak": current,
         "longest_streak": longest,

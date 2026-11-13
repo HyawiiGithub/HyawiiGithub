@@ -7,12 +7,10 @@
 <meta name="description" content="i just code anything">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="bg-grid" aria-hidden="true"></div>
-<div class="bg-glow" aria-hidden="true"></div>
 
 <header class="topbar">
   <span class="pulse-dot" aria-hidden="true"></span>
@@ -21,9 +19,25 @@
 
 <main>
   <div class="brand">
-    <strong>HYAWII</strong>
+    <strong>hyawii</strong>
     <small>i just code anything</small>
   </div>
+
+  <section class="card" aria-labelledby="worth-title">
+    <div class="card-head">
+      <h2 id="worth-title">net worth</h2>
+      <div class="head-meta"><span id="worth-meta">loading</span></div>
+    </div>
+    <div class="worth-body">
+      <div class="worth-figure">
+        <strong id="worth-value">$0</strong>
+        <span id="worth-sub"></span>
+      </div>
+      <div class="worth-chart">
+        <canvas id="worthChart" aria-label="net worth over the last year"></canvas>
+      </div>
+    </div>
+  </section>
 
   <section class="card" aria-labelledby="contrib-title">
     <div class="card-head">

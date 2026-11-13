@@ -101,6 +101,125 @@ function renderStripe(data) {
     .join('');
 }
 
+/* --------------------------------------------------------------- net worth */
+
+function money(n) {
+  const units = [[1e12, 'T'], [1e9, 'B'], [1e6, 'M'], [1e3, 'K']];
+  for (const [size, suffix] of units) {
+    if (n >= size) return `$${(n / size).toFixed(2)}${suffix}`;
+  }
+  return `$${Math.round(n)}`;
+}
+
+function setupWorth(data) {
+  const canvas = document.getElementById('worthChart');
+  const ctx = canvas.getContext('2d');
+  const tip = document.getElementById('tooltip');
+  const per = data.per_commit || 1000000;
+
+  let running = 0;
+  const points = data.days.map(([iso, count]) => {
+    running += count;
+    return { value: running * per, label: longDate(parseISO(iso)) };
+  });
+  const peak = points[points.length - 1].value || 1;
+
+  document.getElementById('worth-value').textContent = money(data.net_worth);
+  document.getElementById('worth-meta').innerHTML = `<b>${fmt(data.total)}</b> commits`;
+  document.getElementById('worth-sub').innerHTML =
+    `${fmt(data.net_worth)}<br>since ${MONTHS[parseISO(data.days[0][0]).getMonth()]} ${parseISO(data.days[0][0]).getFullYear()}`;
+
+  let hover = -1;
+
+  function draw() {
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const w = canvas.clientWidth || 560;
+    const h = canvas.clientHeight || 132;
+    if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+    }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+
+    const padTop = 10;
+    const padBottom = 6;
+    const x = (i) => (i / (points.length - 1)) * (w - 2) + 1;
+    const y = (v) => (h - padBottom) - (v / peak) * (h - padBottom - padTop);
+
+    ctx.strokeStyle = 'rgba(255,255,255,.05)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 2; i += 1) {
+      const gy = padTop + (h - padTop - padBottom) * (i / 2);
+      ctx.beginPath();
+      ctx.moveTo(0, gy);
+      ctx.lineTo(w, gy);
+      ctx.stroke();
+    }
+
+    ctx.beginPath();
+    points.forEach((p, i) => {
+      if (i === 0) ctx.moveTo(x(i), y(p.value));
+      else ctx.lineTo(x(i), y(p.value));
+    });
+    ctx.strokeStyle = '#a78bfa';
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+
+    ctx.lineTo(w, h);
+    ctx.lineTo(x(0), h);
+    ctx.closePath();
+    const fill = ctx.createLinearGradient(0, padTop, 0, h);
+    fill.addColorStop(0, 'rgba(167,139,250,.42)');
+    fill.addColorStop(1, 'rgba(167,139,250,0)');
+    ctx.fillStyle = fill;
+    ctx.fill();
+
+    const index = hover >= 0 ? hover : points.length - 1;
+    const hx = x(index);
+    const hy = y(points[index].value);
+    if (hover >= 0) {
+      ctx.strokeStyle = 'rgba(255,255,255,.22)';
+      ctx.beginPath();
+      ctx.moveTo(hx, 0);
+      ctx.lineTo(hx, h);
+      ctx.stroke();
+    }
+    ctx.beginPath();
+    ctx.arc(hx, hy, 3.2, 0, Math.PI * 2);
+    ctx.fillStyle = '#c9b8ff';
+    ctx.fill();
+  }
+
+  function indexFrom(clientX) {
+    const rect = canvas.getBoundingClientRect();
+    const ratio = (clientX - rect.left) / rect.width;
+    return Math.max(0, Math.min(points.length - 1, Math.round(ratio * (points.length - 1))));
+  }
+
+  canvas.addEventListener('mousemove', (event) => {
+    hover = indexFrom(event.clientX);
+    draw();
+    const rect = canvas.getBoundingClientRect();
+    const point = points[hover];
+    tip.innerHTML = `<strong>${money(point.value)}</strong><span>${point.label}</span>`;
+    tip.hidden = false;
+    const px = rect.left + (hover / (points.length - 1)) * rect.width;
+    tip.style.left = `${Math.min(Math.max(px, 90), window.innerWidth - 90)}px`;
+    tip.style.top = `${rect.top + 30}px`;
+  });
+
+  canvas.addEventListener('mouseleave', () => {
+    hover = -1;
+    tip.hidden = true;
+    draw();
+  });
+
+  window.addEventListener('resize', draw);
+  draw();
+}
+
 /* ------------------------------------------------------------------- game */
 
 function setupGame() {
@@ -315,6 +434,7 @@ async function boot() {
     const data = await response.json();
     renderHeatmap(data);
     renderStripe(data);
+    setupWorth(data);
   } catch (error) {
     document.getElementById('head-total').textContent = `could not load data.json (${error.message})`;
   }
