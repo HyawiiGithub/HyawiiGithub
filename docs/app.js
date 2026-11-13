@@ -135,6 +135,7 @@ function setupWorth(data) {
     `<span class="${pct >= 0 ? 'up' : 'down'}">${pct >= 0 ? '+' : ''}${pct.toFixed(2)}% today</span>`
     + `<span>${fmt(data.total)} commits</span>`;
 
+  const PAD_LEFT = 46;
   let hover = -1;
 
   function draw() {
@@ -151,7 +152,7 @@ function setupWorth(data) {
 
     const padTop = 10;
     const padBottom = 18;
-    const x = (i) => (i / (points.length - 1)) * (w - 2) + 1;
+    const x = (i) => PAD_LEFT + (i / (points.length - 1)) * (w - PAD_LEFT - 2);
     const y = (v) => (h - padBottom) - ((Math.log(v) - lowLog) / spread) * (h - padBottom - padTop);
 
     for (let exp = Math.floor(Math.log10(lowValue)); exp <= Math.ceil(Math.log10(highValue)); exp += 1) {
@@ -161,11 +162,11 @@ function setupWorth(data) {
       ctx.strokeStyle = 'rgba(255,255,255,.05)';
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(0, gy);
+      ctx.moveTo(PAD_LEFT, gy);
       ctx.lineTo(w, gy);
       ctx.stroke();
       ctx.fillStyle = 'rgba(139,139,150,.75)';
-      ctx.fillText(money(level), 2, gy - 3);
+      ctx.fillText(money(level), 2, gy + 3);
     }
 
     const endTime = points[points.length - 1].date.getTime();
@@ -198,7 +199,7 @@ function setupWorth(data) {
     ctx.lineTo(w, h);
     ctx.lineTo(x(0), h);
     ctx.closePath();
-    const fill = ctx.createLinearGradient(0, padTop, 0, h);
+    const fill = ctx.createLinearGradient(PAD_LEFT, padTop, PAD_LEFT, h);
     fill.addColorStop(0, 'rgba(167,139,250,.34)');
     fill.addColorStop(1, 'rgba(167,139,250,0)');
     ctx.fillStyle = fill;
@@ -223,14 +224,14 @@ function setupWorth(data) {
 
   canvas.addEventListener('mousemove', (event) => {
     const rect = canvas.getBoundingClientRect();
-    const ratio = (event.clientX - rect.left) / rect.width;
+    const ratio = (event.clientX - rect.left - PAD_LEFT) / (rect.width - PAD_LEFT - 2);
     hover = Math.max(0, Math.min(points.length - 1, Math.round(ratio * (points.length - 1))));
     draw();
 
     const point = points[hover];
     tip.innerHTML = `<strong>${money(point.value)}</strong><span>${longDate(point.date)}</span>`;
     tip.hidden = false;
-    const px = rect.left + (hover / (points.length - 1)) * rect.width;
+    const px = rect.left + PAD_LEFT + (hover / (points.length - 1)) * (rect.width - PAD_LEFT - 2);
     tip.style.left = `${Math.min(Math.max(px, 92), window.innerWidth - 92)}px`;
     tip.style.top = `${rect.top + 34}px`;
   });

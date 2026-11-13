@@ -423,7 +423,7 @@ def render_worth(days: list[tuple[dt.date, int, int]]) -> str:
     best_day = max((count for _d, count, _l in days), default=0) * 1_000_000
 
     width, height = 840, 292
-    x0, x1 = 26, 814
+    x0, x1 = 78, 814
     y0, y1 = 128, 250
 
     values = [value for _date, value in history]
@@ -454,7 +454,7 @@ def render_worth(days: list[tuple[dt.date, int, int]]) -> str:
             grid.append(
                 f'<line x1="{x0}" y1="{gy:.1f}" x2="{x1}" y2="{gy:.1f}" stroke="{EDGE}" '
                 'stroke-dasharray="2 4"/>'
-                f'<text x="{x0 + 4}" y="{gy - 5:.1f}" font-family="{MONO}" font-size="8" '
+                f'<text x="30" y="{gy + 3:.1f}" font-family="{MONO}" font-size="8" '
                 f'fill="{MUTED}">{compact_money(magnitude)}</text>'
             )
         magnitude *= 10
