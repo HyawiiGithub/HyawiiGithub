@@ -226,7 +226,7 @@ def levels(days: list[tuple[dt.date, int, int]]) -> dict[dt.date, int]:
 
 
 def render_graph(days: list[tuple[dt.date, int, int]]) -> str:
-    """Just the grid. No panel, no title, no glow — transparent background."""
+    """Just the grid: no panel, no title, no glow, transparent background."""
     weeks = week_starts(days)
     shade = levels(days)
     counts = {d: c for d, c, _l in days}

@@ -3,7 +3,7 @@
 i just code anything. belgium.
 
 mostly typescript and python, mostly things that have no business running in a browser tab.
-right now that means multiplayer political/economic sims — hourly turns, elections, central banks,
+right now that means multiplayer political/economic sims: hourly turns, elections, central banks,
 corporations quietly undercutting each other while nobody's watching the market page.
 
 <img src="assets/graph.svg" alt="contributions over the last year">
@@ -21,17 +21,17 @@ html 44%   javascript 27%   typescript 25%   css 3%   python 1%
 
 **what i'm actually building**
 
-- **[AHDGame](https://github.com/HyawiiGithub/AHDGame)** — browser multiplayer political + economic sim. elections, legislation, corporations, central banks, hourly turns.
-- **[discord-economic-intelligence](https://github.com/HyawiiGithub/discord-economic-intelligence)** — per-server discord economy: markets, a jarvis, and a cloudflare dashboard doing more than it should.
-- **[dmWipe](https://github.com/HyawiiGithub/dmWipe)** — vencord plugin. bulk deletes messages. you know why.
-- **[vanguard-group](https://github.com/HyawiiGithub/vanguard-group)** — corporate alliance inside AHD. floor prices, 10–15% margins, no charity.
+- **[AHDGame](https://github.com/HyawiiGithub/AHDGame)**. browser multiplayer political + economic sim. elections, legislation, corporations, central banks, hourly turns.
+- **[discord-economic-intelligence](https://github.com/HyawiiGithub/discord-economic-intelligence)**. per-server discord economy: markets, a jarvis, and a cloudflare dashboard doing more than it should.
+- **[dmWipe](https://github.com/HyawiiGithub/dmWipe)**. vencord plugin. bulk deletes messages. you know why.
+- **[vanguard-group](https://github.com/HyawiiGithub/vanguard-group)**. corporate alliance inside AHD. floor prices, 10 to 15% margins, no charity.
 
 **and then the rest**
 
-- **[crown](https://github.com/HyawiiGithub/crown)** — typescript. it's called crown. that's all i'm giving you.
-- **[swiss-constitution](https://github.com/HyawiiGithub/swiss-constitution)**, **[CEC-Elections](https://github.com/HyawiiGithub/CEC-Elections)**, **[USSR-stock](https://github.com/HyawiiGithub/USSR-stock)** — mock governments. occasionally run better than the real ones.
-- **victoria 3 mods** — [A New Century](https://github.com/HyawiiGithub/A-New-Century), [Modern-Day-Victoria-3-Web](https://github.com/HyawiiGithub/Modern-Day-Victoria-3-Web). yes, the map is still cursed.
-- **[Flint-And-Steel-MP](https://github.com/HyawiiGithub/Flint-And-Steel-MP)**, **[Twitter-MD-RP](https://github.com/HyawiiGithub/Twitter-MD-RP)** — older stuff, still running somewhere.
+- **[crown](https://github.com/HyawiiGithub/crown)**. typescript. it's called crown. that's all i'm giving you.
+- **[swiss-constitution](https://github.com/HyawiiGithub/swiss-constitution)**, **[CEC-Elections](https://github.com/HyawiiGithub/CEC-Elections)**, **[USSR-stock](https://github.com/HyawiiGithub/USSR-stock)**. mock governments. occasionally run better than the real ones.
+- **victoria 3 mods**: [A New Century](https://github.com/HyawiiGithub/A-New-Century), [Modern-Day-Victoria-3-Web](https://github.com/HyawiiGithub/Modern-Day-Victoria-3-Web). yes, the map is still cursed.
+- **[Flint-And-Steel-MP](https://github.com/HyawiiGithub/Flint-And-Steel-MP)**, **[Twitter-MD-RP](https://github.com/HyawiiGithub/Twitter-MD-RP)**. older stuff, still running somewhere.
 
 ---
 
